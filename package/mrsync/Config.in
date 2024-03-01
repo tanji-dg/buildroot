@@ -2,3 +2,4 @@ config BR2_PACKAGE_MRSYNC
 	bool "mrsync"
 	depends on BR2_PACKAGE_RSYNC
 	help
+	  mrsync is a package that consists of utilities for transfering a bunch of files from a master machine to multiple target machines simultaneously by using the multicasting capability in the UNIX system.
