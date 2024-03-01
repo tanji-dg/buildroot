@@ -51,6 +51,9 @@ RUN apt-get -o APT::Retries=3 install -y --no-install-recommends \
         subversion \
         unzip \
         wget \
+        libarchive-tools \
+        vim \
+        less \
         && \
     apt-get -y autoremove && \
     apt-get -y clean

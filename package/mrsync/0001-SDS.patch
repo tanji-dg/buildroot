@@ -1,14 +1,14 @@
 diff --git a/Makefile b/Makefile
 new file mode 100644
-index 0000000..c6dc9a3
+index 0000000..ea89ba8
 --- /dev/null
 +++ b/Makefile
 @@ -0,0 +1,71 @@
 +# ----- start of system dependent section -----
 +
-+INSTALL  = cp -p 
++INSTALL  = cp -p
 +
-+SUNFLAG  =                                        # -D_SUN on Solaris machines 
++SUNFLAG  =                                        # -D_SUN on Solaris machines
 +IPV6FLAG =                                         # -DIPV6 for IPv6
 +DEBUG    =                                          # -g -ggdb
 +#CC       = gcc-2.95.3.ren                           # 32-bit compiler
@@ -52,26 +52,39 @@ index 0000000..c6dc9a3
 +
 +multicatcher:	multicatcher.o global.o setup_socket.o set_catcher_mcast.o \
 +		page_reader.o complaint_sender.o \
-+		file_operations.o signal.o timing.o 
++		file_operations.o signal.o timing.o
 +		${CC} ${CFLAGS} -o $@ $^  ${LIBS}
 +
 +# for rtt and rttcatcher
 +${OBJ4}:	rttmain.h rttproto.h
 +
 +rtt:		rtt.o setup_socket.o set_mcast.o \
-+		rttsends.o rttcomplaints.o timing.o signal.o
++		rttsends.o rttcomplaints.o timing.o signal.o global.o
 +		${CC} ${CFLAGS} -o $@ $^  ${LIBS}
 +
 +rttcatcher:	rttcatcher.o setup_socket.o set_catcher_mcast.o \
 +		rttpage_reader.o rttcomplaint_sender.o rttmissings.o \
-+		signal.o timing.o
++		signal.o timing.o global.o
 +		${CC} ${CFLAGS} -o $@ $^  ${LIBS}
 +
 +# misc
 +trFilelist:	trFilelist.o
 +		${CC} ${CFLAGS} -o $@ $^  ${LIBS}
 +
-+# to clean up 
++# to clean up
 +clean:
 +		rm -f ${PROGS} ${CLEANFILES}
 +
+diff --git a/rttmain.h b/rttmain.h
+index 78eb693..e8b589a 100644
+--- a/rttmain.h
++++ b/rttmain.h
+@@ -119,7 +119,7 @@
+ 
+ #define     MAX_PAGE_SIZE    64512
+ 
+-int    verbose;
++extern int    verbose;
+ 
+ #include "rttproto.h"
+ 
