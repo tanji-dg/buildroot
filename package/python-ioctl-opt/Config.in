@@ -1,0 +1,4 @@
+config BR2_PACKAGE_PYTHON_IOCTL_OPT
+	bool "python-ioctl-opt"
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_IOCTL_OPT

@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PYTHON_JSOCKET
+	bool "python-jsocket"
+	help
+	  Python JSON Server & Client.
+
+	  http://cpiekarski.com/2011/05/09/super-easy-python-json-client-server/

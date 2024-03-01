@@ -1,0 +1,4 @@
+# md5 from https://pypi.python.org/pypi/wiringpi/json, sha256 locally computed
+md5	c2819068036a4d91c2909122f085beb0  wiringpi-2.44.4.tar.gz
+sha256	9d308a88c470dda6fc93ec2ca901e9212beb9e2f459516bd1c7ccd2a8446a8d8  wiringpi-2.44.4.tar.gz
+md5	ea3da098468018930761e165d2d6f157  wiringpi-2.60.0.tar.gz

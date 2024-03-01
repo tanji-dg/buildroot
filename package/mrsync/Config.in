@@ -1,0 +1,4 @@
+config BR2_PACKAGE_MRSYNC
+	bool "mrsync"
+	depends on BR2_PACKAGE_RSYNC
+	help

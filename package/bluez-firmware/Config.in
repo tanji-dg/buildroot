@@ -1,0 +1,8 @@
+config BR2_PACKAGE_BLUEZ_FIRMWARE
+	bool "bluez-firmware"
+	depends on BR2_arm || BR2_aarch64
+	help
+	  Raspberry Pi 3 and Zero W and Pi 3+ Broadcom Bluetooth module
+	  firmware.
+
+	  https://github.com/RPi-Distro/bluez-firmware

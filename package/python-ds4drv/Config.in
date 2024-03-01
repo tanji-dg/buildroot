@@ -1,0 +1,4 @@
+config BR2_PACKAGE_PYTHON_DS4DRV
+	bool "python-ds4drv"
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_PYHON_SETUPTOOLS
