@@ -1,5 +1,0 @@
-diff -purN a/RX8130.1/RX8130/Makefile a/RX8130/RX8130/Makefile
---- a/RX8130.1/RX8130/Makefile	1970-01-01 09:00:00.000000000 +0900
-+++ a/RX8130/RX8130/Makefile	2017-05-19 10:58:22.674765898 +0900
-@@ -0,0 +1 @@
-+obj-m := rtc-rx8130.o

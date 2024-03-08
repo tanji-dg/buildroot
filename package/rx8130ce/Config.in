@@ -1,8 +1,0 @@
-config BR2_PACKAGE_RX8130CE
-	bool "rx8130ce"
-	depends on BR2_LINUX_KERNEL
-	help
-	  A standalone driver for the RX8130CE.
-
-comment "rx8130ce needs a Linux kernel to be built"
-	depends on !BR2_LINUX_KERNEL
