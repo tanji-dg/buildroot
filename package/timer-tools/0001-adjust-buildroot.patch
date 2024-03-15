@@ -1,0 +1,44 @@
+diff --git a/Makefile b/Makefile
+index d6ae3b0..5a773a6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -8,8 +8,8 @@ OBJ		 = build
+ TGT		 = $(OBJ)/target
+ 
+ CROSS_COMPILE	?=
+-AR		 = $(CROSS_COMPILE)gcc-ar
+-CC		 = $(CROSS_COMPILE)gcc
++AR		 ?= $(CROSS_COMPILE)gcc-ar
++CC		 ?= $(CROSS_COMPILE)gcc
+ 
+ HOSTAR		 = ar
+ HOSTCC		 = cc
+@@ -34,19 +34,19 @@ COMMON_CPPFLAGS	 = -D_GNU_SOURCE \
+ 		   -D_XOPEN_SOURCE=700 \
+ 		   -I$(SRC)/include
+ 
+-AFLAGS		 = -Wa,--fatal-warnings
+-CFLAGS		 = $(COMMON_CFLAGS)
+-CPPFLAGS	 = $(COMMON_CPPFLAGS) \
++AFLAGS		 += -Wa,--fatal-warnings
++CFLAGS		 += $(COMMON_CFLAGS)
++CPPFLAGS	 += $(COMMON_CPPFLAGS) \
+ 		   -include $(SRC)/include/compiler.h
+-LDFLAGS		 = -Wl,-O1 \
++LDFLAGS		 += -Wl,-O1 \
+ 		   -Wl,--fatal-warnings \
+ 		   -Wl,--gc-sections
+-LDLIBS		 =
++LDLIBS		 +=
+ 
+-HOSTCFLAGS	 = $(COMMON_CFLAGS)
+-HOSTCPPFLAGS	 = $(COMMON_CPPFLAGS)
+-HOSTLDFLAGS	 =
+-HOSTLDLIBS	 =
++HOSTCFLAGS	 += $(COMMON_CFLAGS)
++HOSTCPPFLAGS	 += $(COMMON_CPPFLAGS)
++HOSTLDFLAGS	 +=
++HOSTLDLIBS	 +=
+ 
+ ###############################################################################
+ 

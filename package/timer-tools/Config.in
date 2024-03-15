@@ -1,0 +1,7 @@
+config BR2_PACKAGE_TIMER_TOOLS
+	bool "timer tools"
+
+config BR2_PACKAGE_ARCH_TIMER_CONTROL
+	bool "arch timer control"
+	depends on BR2_PACKAGE_TIMER_TOOLS
+
