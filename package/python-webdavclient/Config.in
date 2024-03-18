@@ -1,0 +1,10 @@
+config BR2_PACKAGE_PYTHON_WEBDAVCLIENT
+	bool "python-webdavclient"
+	select BR2_PACKAGE_PYTHON_PYCURL # runtime
+	select BR2_PACKAGE_PYTHON_LXML # runtime
+	select BR2_PACKAGE_PYTHON_ARGCOMPLETE # runtime
+	help
+	  Webdav API, resource API и wdc для WebDAV-серверов (Yandex.Disk,
+	  Dropbox, Google Disk, Box, 4shared и т.д.).
+
+	  https://github.com/designerror/webdavclient

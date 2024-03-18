@@ -1,0 +1,473 @@
+diff --git a/arch/arm/boot/dts/overlays/Makefile b/arch/arm/boot/dts/overlays/Makefile
+index 5b1380b55..17f142bb7 100644
+--- a/arch/arm/boot/dts/overlays/Makefile
++++ b/arch/arm/boot/dts/overlays/Makefile
+@@ -226,6 +226,7 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
+ 	sc16is752-spi1.dtbo \
+ 	sdhost.dtbo \
+ 	sdio.dtbo \
++	sds-typex.dtbo \
+ 	seeed-can-fd-hat-v1.dtbo \
+ 	seeed-can-fd-hat-v2.dtbo \
+ 	sh1106-spi.dtbo \
+diff --git a/arch/arm/boot/dts/overlays/adafruit13m-overlay.dts b/arch/arm/boot/dts/overlays/adafruit13m-overlay.dts
+new file mode 100644
+index 000000000..c7f8556a4
+--- /dev/null
++++ b/arch/arm/boot/dts/overlays/adafruit13m-overlay.dts
+@@ -0,0 +1,85 @@
++/*
++ * adafruit13m-overlay.dts
++ *
++ * -------------------------------------------------
++ * 
++ * -------------------------------------------------
++ * Device---Driver-----BUS       GPIO's
++ * display  adafruit13m  spi0.0    25 9
++
++ * Based on  tinylcd35-overlay.dts
++ *  5/3/2015  -- Noralf Trønnes     Initial Device tree framework
++ *  10/3/2015 -- tinylcd@gmail.com  added ds1307 support.
++ *  4/2/2018 -- tanji@daitogiken.com SDS Type-C board support.
++ */
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "brcm,bcm2835", "brcm,bcm2708", "brcm,bcm2709";
++
++	fragment@0 {
++		target = <&spi0>;
++		__overlay__ {
++			status = "okay";
++
++			spidev@0{
++				status = "disabled";
++			};
++
++			spidev@1{
++				status = "disabled";
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&gpio>;
++		__overlay__ {
++			adafruit13m_pins: adafruit13m_pins {
++				brcm,pins = <25 9>;
++				brcm,function = <1 1>; /* out */
++			};
++		};
++	};
++
++	fragment@2 {
++		target = <&spi0>;
++		__overlay__ {
++			/* needed to avoid dtc warning */
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			adafruit13m: adafruit13m@0{
++				compatible = "solomon,ssd1306";
++				reg = <0>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&adafruit13m_pins>;
++				spi-max-frequency = <6000000>;
++				buswidth = <8>;
++				fps = <20>;
++				reset-gpios = <&gpio 25 0>;
++				dc-gpios = <&gpio 9 0>;
++				debug = <0>;
++
++			};
++
++		};
++	};
++
++	fragment@3 {
++		target = <&spi0_pins>;
++		__overlay__ {
++			brcm,pins = <10 11>;
++			brcm,function = <4>; /* alt0 */
++		};
++	};
++
++	__overrides__ {
++		speed =      <&adafruit13m>,"spi-max-frequency:0";
++		rotate =     <&adafruit13m>,"rotate:0";
++		fps =        <&adafruit13m>,"fps:0";
++		debug =      <&adafruit13m>,"debug:0";
++	};
++};
+diff --git a/arch/arm/boot/dts/overlays/gpio-tactsw-overlay.dts b/arch/arm/boot/dts/overlays/gpio-tactsw-overlay.dts
+new file mode 100644
+index 000000000..25ed8591e
+--- /dev/null
++++ b/arch/arm/boot/dts/overlays/gpio-tactsw-overlay.dts
+@@ -0,0 +1,59 @@
++// Definitions for gpio-tactsw module
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "brcm,bcm2708";
++
++	fragment@0 {
++		// Configure the gpio pin controller
++		target = <&gpio>;
++		__overlay__ {
++			// Define a pinctrl state, that sets up the gpio
++			// as an input with a pullup enabled. This does
++			// not take effect by itself, only when referenced
++			// by a "pinctrl client", as is done below. See:
++			//   https://www.kernel.org/doc/Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt
++			//   https://www.kernel.org/doc/Documentation/devicetree/bindings/pinctrl/brcm,bcm2835-gpio.txt
++			pin_state: tact_sw_pins {
++				brcm,pins = <27 22>; // gpio number
++				brcm,function = <0 0>; // 0 = input, 1 = output
++				brcm,pull = <2 2>; // 0 = none, 1 = pull down, 2 = pull up
++			};
++		};
++	};
++
++	fragment@1 {
++		// Add a new device to the /soc devicetree node
++		target-path = "/soc";
++		__overlay__ {
++			tact_sw {
++				// Let the gpio-keys driver handle this device. See:
++				// https://www.kernel.org/doc/Documentation/devicetree/bindings/input/gpio-keys.txt
++				compatible = "gpio-keys";
++
++				// Declare a single pinctrl state (referencing the one declared above) and name it
++				// default, so it is activated automatically.
++				pinctrl-names = "default";
++				pinctrl-0 = <&pin_state>;
++
++				// Enable this device
++				status = "okay";
++
++				autorepeat;
++
++				sw3 {
++					label = "sw3";
++					linux,code = <0x100>;
++					gpios = <&gpio 27 1>;
++				};
++
++				sw4 {
++					label = "sw4";
++					linux,code = <0x101>;
++					gpios = <&gpio 22 1>;
++				};
++			};
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/overlays/sds-typec-overlay.dts b/arch/arm/boot/dts/overlays/sds-typec-overlay.dts
+new file mode 100644
+index 000000000..8dc24a433
+--- /dev/null
++++ b/arch/arm/boot/dts/overlays/sds-typec-overlay.dts
+@@ -0,0 +1,145 @@
++/*
++ * sds type-c
++ */
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "brcm,bcm2835", "brcm,bcm2708", "brcm,bcm2709";
++
++ 	//
++	// from adafruit13m-overlay.dts
++	// 
++
++	fragment@0 {
++		target = <&spi0>;
++		__overlay__ {
++			status = "okay";
++
++			spidev@0{
++				status = "disabled";
++			};
++
++			spidev@1{
++				status = "disabled";
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&gpio>;
++		__overlay__ {
++			adafruit13m_pins: adafruit13m_pins {
++				brcm,pins = <25 9>;
++				brcm,function = <1 1>; /* out */
++			};
++		};
++	};
++
++	fragment@2 {
++		target = <&spi0>;
++		__overlay__ {
++			/* needed to avoid dtc warning */
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			adafruit13m: adafruit13m@0{
++				compatible = "solomon,ssd1306";
++				reg = <0>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&adafruit13m_pins>;
++				spi-max-frequency = <6000000>;
++				buswidth = <8>;
++				fps = <20>;
++				reset-gpios = <&gpio 25 0>;
++				dc-gpios = <&gpio 9 0>;
++				debug = <0>;
++
++			};
++
++		};
++	};
++
++	fragment@3 {
++		target = <&spi0_pins>;
++		__overlay__ {
++			brcm,pins = <10 11>;
++			brcm,function = <4>; /* alt0 */
++		};
++	};
++
++	//
++	// from gpio-tactsw-overlay.dts
++	//
++
++	fragment@4 {
++		// Configure the gpio pin controller
++		target = <&gpio>;
++		__overlay__ {
++			// Define a pinctrl state, that sets up the gpio
++			// as an input with a pullup enabled. This does
++			// not take effect by itself, only when referenced
++			// by a "pinctrl client", as is done below. See:
++			//   https://www.kernel.org/doc/Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt
++			//   https://www.kernel.org/doc/Documentation/devicetree/bindings/pinctrl/brcm,bcm2835-gpio.txt
++			pin_state: tact_sw_pins {
++				brcm,pins = <27 22>; // gpio number
++				brcm,function = <0 0>; // 0 = input, 1 = output
++				brcm,pull = <2 2>; // 0 = none, 1 = pull down, 2 = pull up
++			};
++		};
++	};
++
++	fragment@5 {
++		// Add a new device to the /soc devicetree node
++		target-path = "/soc";
++		__overlay__ {
++			tact_sw {
++				// Let the gpio-keys driver handle this device. See:
++				// https://www.kernel.org/doc/Documentation/devicetree/bindings/input/gpio-keys.txt
++				compatible = "gpio-keys";
++
++				// Declare a single pinctrl state (referencing the one declared above) and name it
++				// default, so it is activated automatically.
++				pinctrl-names = "default";
++				pinctrl-0 = <&pin_state>;
++
++				// Enable this device
++				status = "okay";
++
++				autorepeat;
++
++				sw3 {
++					label = "sw3";
++					linux,code = <0x100>;
++					gpios = <&gpio 27 1>;
++				};
++
++				sw4 {
++					label = "sw4";
++					linux,code = <0x101>;
++					gpios = <&gpio 22 1>;
++				};
++			};
++		};
++	};
++
++	fragment@6 {
++		target = <&i2c0>;
++		__overlay__ {
++			at24@50 {
++				compatible = "atmel,24c32";
++				pagesize = <32>;
++				reg = <0x50>;
++			};
++		};
++	};
++
++	__overrides__ {
++		speed =      <&adafruit13m>,"spi-max-frequency:0";
++		rotate =     <&adafruit13m>,"rotate:0";
++		fps =        <&adafruit13m>,"fps:0";
++		debug =      <&adafruit13m>,"debug:0";
++	};
++};
+diff --git a/arch/arm/boot/dts/overlays/sds-typex-overlay.dts b/arch/arm/boot/dts/overlays/sds-typex-overlay.dts
+new file mode 100644
+index 000000000..54505aa4d
+--- /dev/null
++++ b/arch/arm/boot/dts/overlays/sds-typex-overlay.dts
+@@ -0,0 +1,111 @@
++/*
++ * sds type-x
++ */
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "brcm,bcm2835";
++
++	fragment@0 {
++		target = <&i2c0>;
++		__overlay__ {
++			at24@50 {
++				compatible = "atmel,24c02";
++				reg = <0x50>;
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&i2c1>;
++		__overlay__ {
++			rtc@51 {
++				compatible = "nxp,pcf85063a";
++				reg = <0x51>;
++				quartz-load-femtofarads = <12500>;
++
++				clock {
++					compatible = "fixed-clock";
++					#clock-cells = <0>;
++					clock-frequency = <32768>;
++				};
++			};
++		};
++	};
++
++	fragment@2 {
++		// Configure the gpio pin controller
++		target = <&gpio>;
++		__overlay__ {
++			// Define a pinctrl state, that sets up the gpio // as an input with a pullup enabled. This does // not take effect by itself, only when referenced
++			// by a "pinctrl client", as is done below. See:
++			//   https://www.kernel.org/doc/Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt
++			//   https://www.kernel.org/doc/Documentation/devicetree/bindings/pinctrl/brcm,bcm2835-gpio.txt
++			pin_state: tact_sw_pins {
++				brcm,pins = <27 6 22 13 5 19>; // gpio number
++				brcm,function = <0 0 0 0 0 0>; // 0 = input, 1 = output
++				brcm,pull = <2 2 2 2 2 2>; // 0 = none, 1 = pull down, 2 = pull up
++			};
++		};
++	};
++
++	fragment@3 {
++		// Add a new device to the /soc devicetree node
++		target-path = "/soc";
++		__overlay__ {
++			tact_sw {
++				// Let the gpio-keys driver handle this device. See:
++				// https://www.kernel.org/doc/Documentation/devicetree/bindings/input/gpio-keys.txt
++				compatible = "gpio-keys";
++
++				// Declare a single pinctrl state (referencing the one declared above) and name it
++				// default, so it is activated automatically.
++				pinctrl-names = "default";
++				pinctrl-0 = <&pin_state>;
++
++				// Enable this device
++				status = "okay";
++
++				autorepeat;
++
++				sw2 {
++					label = "sw2";
++					linux,code = <0x100>;
++					gpios = <&gpio 27 1>;
++				};
++
++				sw3 {
++					label = "sw3";
++					linux,code = <0x101>;
++					gpios = <&gpio 6 1>;
++				};
++			
++				sw4 {
++					label = "sw4";
++					linux,code = <0x102>;
++					gpios = <&gpio 22 1>;
++				};
++
++				sw5 {
++					label = "sw5";
++					linux,code = <0x103>;
++					gpios = <&gpio 13 1>;
++				};
++
++				sw6 {
++					label = "sw6";
++					linux,code = <0x104>;
++					gpios = <&gpio 5 1>;
++				};
++
++				sw7 {
++					label = "sw7";
++					linux,code = <0x105>;
++					gpios = <&gpio 19 1>;
++				};
++			};
++		};
++	};
++};
+diff --git a/arch/arm64/configs/bcm2711_defconfig b/arch/arm64/configs/bcm2711_defconfig
+index 99313f8c9..bef1fd4b7 100644
+--- a/arch/arm64/configs/bcm2711_defconfig
++++ b/arch/arm64/configs/bcm2711_defconfig
+@@ -474,7 +474,7 @@ CONFIG_BLK_DEV_RAM=y
+ CONFIG_CDROM_PKTCDVD=m
+ CONFIG_ATA_OVER_ETH=m
+ CONFIG_BLK_DEV_NVME=y
+-CONFIG_EEPROM_AT24=m
++CONFIG_EEPROM_AT24=y
+ CONFIG_EEPROM_AT25=m
+ CONFIG_TI_ST=m
+ CONFIG_SCSI=y
+@@ -708,12 +708,12 @@ CONFIG_TCG_TIS_SPI=m
+ CONFIG_TCG_TIS_I2C=m
+ CONFIG_RASPBERRYPI_GPIOMEM=m
+ CONFIG_I2C=y
+-CONFIG_I2C_CHARDEV=m
++CONFIG_I2C_CHARDEV=y
+ CONFIG_I2C_MUX_GPMUX=m
+ CONFIG_I2C_MUX_PCA954x=m
+ CONFIG_I2C_MUX_PINCTRL=m
+ CONFIG_I2C_BCM2708=m
+-CONFIG_I2C_BCM2835=m
++CONFIG_I2C_BCM2835=y
+ CONFIG_I2C_BRCMSTB=m
+ CONFIG_I2C_DESIGNWARE_PLATFORM=m
+ CONFIG_I2C_GPIO=m
+@@ -1362,7 +1362,7 @@ CONFIG_RTC_DRV_ISL1208=m
+ CONFIG_RTC_DRV_ISL12022=m
+ CONFIG_RTC_DRV_X1205=m
+ CONFIG_RTC_DRV_PCF8523=m
+-CONFIG_RTC_DRV_PCF85063=m
++CONFIG_RTC_DRV_PCF85063=y
+ CONFIG_RTC_DRV_PCF85363=m
+ CONFIG_RTC_DRV_PCF8563=m
+ CONFIG_RTC_DRV_PCF8583=m

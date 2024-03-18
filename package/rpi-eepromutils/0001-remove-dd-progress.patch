@@ -1,0 +1,19 @@
+diff --git a/eepromutils/eepflash.sh b/eepromutils/eepflash.sh
+index 31b1708..98c47c9 100755
+--- a/eepromutils/eepflash.sh
++++ b/eepromutils/eepflash.sh
+@@ -143,12 +143,12 @@ fi
+ if [ "$MODE" = "write" ]
+  then
+ 	echo "Writing..."
+-	dd if=$FILE of=$SYS/$BUS-00$ADDR/eeprom status=progress
++	dd if=$FILE of=$SYS/$BUS-00$ADDR/eeprom
+ 	rc=$?
+ elif [ "$MODE" = "read" ]
+  then
+ 	echo "Reading..."
+-	dd if=$SYS/$BUS-00$ADDR/eeprom of=$FILE status=progress
++	dd if=$SYS/$BUS-00$ADDR/eeprom of=$FILE
+ 	rc=$?
+ fi
+ 

@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PYTHON_JSON_RPC
+	bool "python-json-rpc"
+	help
+	  JSON-RPC transport implementation.
+
+	  https://github.com/pavlov99/json-rpc

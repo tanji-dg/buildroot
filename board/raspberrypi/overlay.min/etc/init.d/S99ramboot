@@ -1,0 +1,53 @@
+#!/bin/sh -ex
+#
+# Start ram boot
+#
+
+case "$1" in
+    start)
+	printf "Starting ram boot: "
+	for x in $(cat /proc/cmdline); do
+	    case $x in
+		ramboot_dev=*)
+		    ramboot_dev=${x#ramboot_dev=}
+		    ;;
+		ramboot_part=*)
+		    ramboot_part=${x#ramboot_part=}
+		    ;;
+		ramboot_fs=*)
+		    ramboot_fs=${x#ramboot_fs=}
+		    ;;
+		ramboot_dir=*)
+		    ramboot_dir=${x#ramboot_dir=}
+		    ;;
+		ramboot_run=*)
+		    ramboot_run=${x#ramboot_run=}
+		    ;;
+	    esac
+	done
+
+	if [ -z "$ramboot_dev" ] || [ -z "$ramboot_part" ] || [ -z "$ramboot_fs" ] || [ -z "$ramboot_dir" ] || [ -z "$ramboot_run" ]; then
+	    echo "ramboot env empty"
+	    exit 1
+	fi
+
+	while [ ! -e $ramboot_dev$ramboot_part ]; do
+	    sleep 0.01
+	done
+
+	mount -t $ramboot_fs -o ro $ramboot_dev$ramboot_part /mnt
+
+	cp -rL /mnt/$ramboot_dir /tmp
+
+	umount /mnt
+
+	/tmp/$(basename $ramboot_dir)/$ramboot_run &  
+  
+	echo 'OK'
+	;;
+
+    *)
+	exit 0
+esac
+
+exit $?

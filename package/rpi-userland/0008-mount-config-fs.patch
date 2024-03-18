@@ -1,0 +1,13 @@
+diff --git a/host_applications/linux/apps/dtoverlay/dtoverlay_main.c b/host_applications/linux/apps/dtoverlay/dtoverlay_main.c
+index 5f87e66..039ec80 100755
+--- a/host_applications/linux/apps/dtoverlay/dtoverlay_main.c
++++ b/host_applications/linux/apps/dtoverlay/dtoverlay_main.c
+@@ -253,7 +253,7 @@ int main(int argc, const char **argv)
+ 
+ 	cfg_dir = CFG_DIR_2 DT_SUBDIR;
+ 	if (!dir_exists(cfg_dir) &&
+-	    (run_cmd("mount -t configfs none '%s'", cfg_dir) != 0))
++	    (run_cmd("mount -t configfs none '%s'", CFG_DIR_2) != 0))
+ 	    fatal_error("Failed to mount configfs - %d", errno);
+     }
+ 

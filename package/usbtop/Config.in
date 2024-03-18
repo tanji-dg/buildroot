@@ -1,0 +1,8 @@
+config BR2_PACKAGE_USBTOP
+	bool "usbtop"
+	select BR2_PACKAGE_LIBPCAP
+	help
+	  usbtop
+	  usbtop is a top-like utility that shows an estimated instantaneous bandwidth on USB buses and devices.
+
+	  https://github.com/aguinet/usbtop
