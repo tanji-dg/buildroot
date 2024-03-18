@@ -112,3 +112,134 @@ index 88fc48e..d07098f 100644
  	$Q $(LDCONFIG)
  
  .PHONY: check-deb-destdir
+diff --git a/wiringPi/wiringPi.c b/wiringPi/wiringPi.c
+index 28dfe61..210e1d8 100644
+--- a/wiringPi/wiringPi.c
++++ b/wiringPi/wiringPi.c
+@@ -248,8 +248,8 @@ static          int wiringPiSetuped = FALSE ;
+ // Locals to hold pointers to the hardware
+ 
+ static volatile unsigned int *base ;
+-static volatile unsigned int *gpio ;
+-static volatile unsigned int *pwm ;
++volatile unsigned int *gpio ;
++volatile unsigned int *pwm ;
+ static volatile unsigned int *clk ;
+ static volatile unsigned int *pads ;
+ static volatile unsigned int *timer ;
+@@ -581,8 +581,8 @@ int GetMaxPin() {
+ }
+ 
+ 
+-#define RETURN_ON_MODEL5 if (PI_MODEL_5 == RaspberryPiModel) { if (wiringPiDebug) printf("Function not supported on Pi5\n");  return; } 
+- 
++#define RETURN_ON_MODEL5 if (PI_MODEL_5 == RaspberryPiModel) { if (wiringPiDebug) printf("Function not supported on Pi5\n");  return; }
++
+ int FailOnModel5() {
+   if (PI_MODEL_5 == RaspberryPiModel) {
+     return wiringPiFailure (WPI_ALMOST, "Function not supported on Raspberry Pi 5.\n"
+@@ -624,7 +624,7 @@ static uint8_t gpioToShift [] =
+ // gpioToGPSET:
+ //	(Word) offset to the GPIO Set registers for each GPIO pin
+ 
+-static uint8_t gpioToGPSET [] =
++uint8_t gpioToGPSET [] =
+ {
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+@@ -633,7 +633,7 @@ static uint8_t gpioToGPSET [] =
+ // gpioToGPCLR:
+ //	(Word) offset to the GPIO Clear registers for each GPIO pin
+ 
+-static uint8_t gpioToGPCLR [] =
++uint8_t gpioToGPCLR [] =
+ {
+   10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+   11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
+@@ -722,7 +722,7 @@ static uint8_t gpioToPwmALT [] =
+ // gpioToPwmPort
+ //	The port value to put a GPIO pin into PWM mode
+ 
+-static uint8_t gpioToPwmPort [] =
++uint8_t gpioToPwmPort [] =
+ {
+           0,         0,         0,         0,         0,         0,         0,         0,	//  0 ->  7
+           0,         0,         0,         0, PWM0_DATA, PWM1_DATA,         0,         0, 	//  8 -> 15
+@@ -1160,16 +1160,16 @@ void setPadDrive (int group, int value)
+     if (PI_MODEL_5 == RaspberryPiModel) {
+       if (-1==group) {
+         printf ("Pad register:\n");
+-        for (int pin=0, maxpin=GetMaxPin(); pin<=maxpin; ++pin) { 
++        for (int pin=0, maxpin=GetMaxPin(); pin<=maxpin; ++pin) {
+           unsigned int drive = (pads[1+pin] & RP1_PAD_DRIVE_MASK)>>4;
+           printf ("  Pin %2d: 0x%08X drive: 0x%d = %2dmA\n", pin, pads[1+pin], drive, 0==drive ? 2 : drive*4) ;
+-        }        
++        }
+       }
+       if (group !=0) { // only GPIO range @RP1
+         return ;
+-      } 
++      }
+       switch(value) {
+-        default: 
++        default:
+                 /* bcm*/                 // RP1
+         case 0: /* 2mA*/ value=0; break; // 2mA
+         case 1: /* 4mA*/
+@@ -1180,9 +1180,9 @@ void setPadDrive (int group, int value)
+         case 6: /*14mA*/
+         case 7: /*16mA*/ value=3; break; //12mA
+       }
+-      wrVal = (value << 4); //Drive strength 0-3   
++      wrVal = (value << 4); //Drive strength 0-3
+       //set for all pins even when it's avaiable for each pin separately
+-      for (int pin=0, maxpin=GetMaxPin(); pin<=maxpin; ++pin) { 
++      for (int pin=0, maxpin=GetMaxPin(); pin<=maxpin; ++pin) {
+         pads[1+pin] = (pads[1+pin] & RP1_INV_PAD_DRIVE_MASK) | wrVal;
+       }
+       rdVal = pads[1+17]; // only pin 17 readback, for logging
+@@ -1194,7 +1194,7 @@ void setPadDrive (int group, int value)
+       if ((group < 0) || (group > 2))
+         return ;
+ 
+-      wrVal = BCM_PASSWORD | 0x18 | value; //Drive strength 0-7  
++      wrVal = BCM_PASSWORD | 0x18 | value; //Drive strength 0-7
+       *(pads + group + 11) = wrVal ;
+       rdVal = *(pads + group + 11);
+     }
+@@ -1521,7 +1521,7 @@ void pinModeAlt (int pin, int mode)
+ 
+     if (PI_MODEL_5 == RaspberryPiModel) {
+ 
+-      //confusion! diffrent to to BCM!  this is taking directly the value for the register 
++      //confusion! diffrent to to BCM!  this is taking directly the value for the register
+     /*
+     "alt0" 0b100
+     "alt1" 0b101
+@@ -1584,7 +1584,7 @@ void pinMode (int pin, int mode)
+     shift   = gpioToShift  [pin] ;
+ 
+     if (mode == INPUT) {
+-      if (PI_MODEL_5 == RaspberryPiModel) { 
++      if (PI_MODEL_5 == RaspberryPiModel) {
+         pads[1+pin] = (pin<=8) ? RP1_PAD_DEFAULT_0TO8 : RP1_PAD_DEFAULT_FROM9;
+         gpio[2*pin+1] = RP1_FSEL_GPIO | RP1_DEBOUNCE_DEFAULT; // GPIO
+         rio[RP1_RIO_OE + RP1_CLR_OFFSET] = 1<<pin;            // Input
+@@ -1806,7 +1806,7 @@ void digitalWrite (int pin, int value)
+   {
+     /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)	// Sys mode
+     {
+-      if (sysFds [pin] != -1) 
++      if (sysFds [pin] != -1)
+       {
+         if (value == LOW)
+           write (sysFds [pin], "0\n", 2) ;
+@@ -1827,7 +1827,7 @@ void digitalWrite (int pin, int value)
+         rio[RP1_RIO_OUT + RP1_CLR_OFFSET] = 1<<pin;
+       } else {
+         //printf("Set pin %d >>0x%08x<< to high\n", pin, 1<<pin);
+-        rio[RP1_RIO_OUT + RP1_SET_OFFSET] = 1<<pin; 
++        rio[RP1_RIO_OUT + RP1_SET_OFFSET] = 1<<pin;
+       }
+     } else {
+       if (value == LOW)
