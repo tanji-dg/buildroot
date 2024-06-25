@@ -660,6 +660,7 @@ endmenu
 	source "package/xorriso/Config.in"
 	source "package/xr819-xradio/Config.in"
 	source "package/rpi-eepromutils/Config.in"
+	source "package/rv8263/Config.in"
 endmenu
 
 menu "Interpreter languages and scripting"

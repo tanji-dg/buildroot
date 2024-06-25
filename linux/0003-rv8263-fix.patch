@@ -1,0 +1,16 @@
+diff --git a/drivers/rtc/rtc-pcf85063.c b/drivers/rtc/rtc-pcf85063.c
+index 754e03984..635659b75 100644
+--- a/drivers/rtc/rtc-pcf85063.c
++++ b/drivers/rtc/rtc-pcf85063.c
+@@ -302,6 +302,11 @@ static int pcf85063_ioctl(struct device *dev, unsigned int cmd,
+ 		status = (status & PCF85063_REG_SC_OS) ? RTC_VL_DATA_INVALID : 0;
+ 
+ 		return put_user(status, (unsigned int __user *)arg);
++	case RTC_VL_CLR:
++		ret = regmap_update_bits(pcf85063->regmap, PCF85063_REG_SC,
++					 PCF85063_REG_SC_OS, 0);
++
++		return ret;
+ 
+ 	default:
+ 		return -ENOIOCTLCMD;
