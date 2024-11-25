@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-DOTNET_RUNTIME_VERSION = 8.0.3
+DOTNET_RUNTIME_VERSION = 8.0.6
 
 # Set download URL and runtime identifier
 # See https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
